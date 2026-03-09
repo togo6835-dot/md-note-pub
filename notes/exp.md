@@ -46,12 +46,14 @@ overflow や underflow の結果として、
 
 のような不定形が現れると、`NaN` が発生する。
 
-> つまり
+>つまり、
+>
 >$$
 >\frac{\exp(1000)+\exp(1001)}{\exp(999)}
 >$$
+>
 >のような計算を素朴に行うと非常に危険。
-ちなみに、[TensorFlow](https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits)や[Pytorch](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.log_softmax.html?utm_source=chatgpt.com)ではデフォルトで対策がなされている（以下で説明する方法）。
+>ちなみに、[TensorFlow](https://www.tensorflow.org/api_docs/python/tf/nn/sigmoid_cross_entropy_with_logits)や[Pytorch](https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.log_softmax.html?utm_source=chatgpt.com)ではデフォルトで対策がなされている（以下で説明する方法）。
 ---
 
 
