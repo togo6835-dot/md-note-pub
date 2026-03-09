@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>&#x6307;&#x6570;&#x95a2;&#x6570; &bsol;&lpar; &bsol;exp &bsol;&rpar; &#x306e;&#x6570;&#x5024;&#x4e0d;&#x5b89;&#x5b9a;&#x6027;&#x307e;&#x3068;&#x3081;</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="指数関数--exp--の数値不安定性まとめ">指数関数 ( \exp ) の数値不安定性まとめ</h1>
+<h2 id="1-何が問題か">1. 何が問題か</h2>
+<p>数値計算では、指数関数</p>
+<p>[
+\exp(x)
+]</p>
+<p>が非常に急激に増減するため、( x ) が大きすぎたり小さすぎたりすると、計算機で正しく扱えなくなる。</p>
+<h3 id="overflow">overflow</h3>
+<p>大きすぎて表現できない状態。<br>
+たとえば倍精度では、おおよそ</p>
+<p>[
+x \gtrsim 709.78
+]</p>
+<p>で</p>
+<p>[
+\exp(x)
+]</p>
+<p>は有限値として表現できず、<code>inf</code> になりうる。</p>
+<h3 id="underflow">underflow</h3>
+<p>小さすぎて表現できない状態。<br>
+たとえば</p>
+<p>[
+\exp(-1000)
+]</p>
+<p>のような値は、実際には極小の正数だが、計算機では 0 として扱われることがある。</p>
+<h3 id="nan">NaN</h3>
+<p>overflow や underflow の結果として、</p>
+<p>[
+\frac{\infty}{\infty},\qquad \frac{0}{0},\qquad \infty-\infty
+]</p>
+<p>のような不定形が現れると、<code>NaN</code> が発生する。</p>
+<hr>
+<h2 id="2-倍精度での基本的な目安">2. 倍精度での基本的な目安</h2>
+<p>IEEE 754 の倍精度浮動小数点数では、だいたい次を覚えておくとよい。</p>
+<p>[
+\text{最大有限値} \approx 1.8 \times 10^{308}
+]</p>
+<p>[
+\text{最小正規化正数} \approx 2.2 \times 10^{-308}
+]</p>
+<p>[
+\varepsilon_{\mathrm{mach}} \approx 2.2 \times 10^{-16}
+]</p>
+<p>[
+\exp(x)\text{ は }x \gtrsim 709.78\text{ で危険}
+]</p>
+<p>したがって、( \exp ) をそのまま計算する実装は非常に壊れやすい。</p>
+<hr>
+<h2 id="3-基本方針">3. 基本方針</h2>
+<p>本質は一つである。</p>
+<p>[
+\text{「大きい } \exp \text{ を直接作らない」}
+]</p>
+<p>そのために、次のような工夫を行う。</p>
+<ol>
+<li>対数のまま持つ</li>
+<li>最大値や最小値を引く</li>
+<li>和は log-sum-exp を使う</li>
+<li>比は差で計算する</li>
+<li>必要なら場合分けして指数の中身を非正にする</li>
+</ol>
+<hr>
+<h2 id="4-最大値を引く方法">4. 最大値を引く方法</h2>
+<p>たとえば</p>
+<p>[
+w_i = \exp(a_i)
+]</p>
+<p>という重みがあるとする。<br>
+これをそのまま計算すると、( a_i ) が大きいと overflow する。</p>
+<p>そこで</p>
+<p>[
+m = \max_i a_i
+]</p>
+<p>を取って</p>
+<p>[
+w_i = \exp(a_i-m)\exp(m)
+]</p>
+<p>と書く。<br>
+正規化にしか使わないなら共通因子 ( \exp(m) ) は消えるので、</p>
+<p>[
+\tilde w_i = \exp(a_i-m)
+]</p>
+<p>だけを計算すればよい。</p>
+<p>このとき</p>
+<p>[
+a_i-m \le 0
+]</p>
+<p>なので、指数の中身は常に非正となり、安全になる。</p>
+<hr>
+<h2 id="5-softmax-の安定化">5. softmax の安定化</h2>
+<p>softmax は</p>
+<p>[
+p_i = \frac{\exp(a_i)}{\sum_j \exp(a_j)}
+]</p>
+<p>で定義されるが、これは素朴に計算してはいけない。</p>
+<p>安定な形は</p>
+<p>[
+m=\max_j a_j
+]</p>
+<p>として</p>
+<p>[
+p_i=\frac{\exp(a_i-m)}{\sum_j \exp(a_j-m)}
+]</p>
+<p>である。</p>
+<p>これにより、分子・分母に現れる指数の中身がすべて非正になる。</p>
+<hr>
+<h2 id="6-log-sum-exp-trick">6. log-sum-exp trick</h2>
+<p>和</p>
+<p>[
+\sum_i \exp(a_i)
+]</p>
+<p>そのものを計算するのも危険である。<br>
+このときは</p>
+<p>[
+\mathrm{LSE}(a_1,\dots,a_N)=
+\log\left(\sum_{i=1}^N \exp(a_i)\right)
+]</p>
+<p>を直接ではなく、</p>
+<p>[
+m=\max_i a_i
+]</p>
+<p>を用いて</p>
+<p>[
+\log\left(\sum_i \exp(a_i)\right)=
+m+\log\left(\sum_i \exp(a_i-m)\right)
+]</p>
+<p>と計算する。</p>
+<p>これが <strong>log-sum-exp trick</strong> である。</p>
+<h3 id="なぜ安全か">なぜ安全か</h3>
+<p>すべての ( a_i-m \le 0 ) なので</p>
+<p>[
+\exp(a_i-m)\le 1
+]</p>
+<p>であり、巨大な指数が出ない。</p>
+<hr>
+<h2 id="7-確率の正規化との関係">7. 確率の正規化との関係</h2>
+<p>log probability</p>
+<p>[
+x_i = \log p_i
+]</p>
+<p>が与えられたとき、正規化された確率は</p>
+<p>[
+p_i = \frac{\exp(x_i)}{\sum_n \exp(x_n)}
+]</p>
+<p>である。</p>
+<p>これを安全に計算するには</p>
+<p>[
+\log p_i=
+x_i-\log\left(\sum_n \exp(x_n)\right)
+]</p>
+<p>とし、さらに log-sum-exp を用いて</p>
+<p>[
+\log\left(\sum_n \exp(x_n)\right)=
+m+\log\left(\sum_n \exp(x_n-m)\right),
+\qquad m=\max_n x_n
+]</p>
+<p>と計算する。</p>
+<hr>
+<h2 id="8--e-s--型の重みに対する適用">8. ( e^{-S} ) 型の重みに対する適用</h2>
+<p>論文や統計力学、経路積分では</p>
+<p>[
+w_i = e^{-S_i}
+]</p>
+<p>のような重みが現れる。<br>
+ここで ( S_i ) が大きくばらつくと、やはり数値的に不安定になる。</p>
+<p>このときは</p>
+<p>[
+S_{\min} = \min_i S_i
+]</p>
+<p>を取って</p>
+<p>[
+w_i = e^{-(S_i-S_{\min})}e^{-S_{\min}}
+]</p>
+<p>と書く。<br>
+正規化だけが必要なら共通因子 ( e^{-S_{\min}} ) は不要なので、</p>
+<p>[
+\tilde w_i = e^{-(S_i-S_{\min})}
+]</p>
+<p>だけ計算すればよい。</p>
+<p>ここでは</p>
+<p>[
+S_i-S_{\min}\ge 0
+]</p>
+<p>だから</p>
+<p>[
+-(S_i-S_{\min})\le 0
+]</p>
+<p>であり、指数の中身が非正になる。</p>
+<h3 id="正規化重み">正規化重み</h3>
+<p>[
+p_i=
+\frac{e^{-S_i}}{\sum_j e^{-S_j}}=
+\frac{e^{-(S_i-S_{\min})}}{\sum_j e^{-(S_j-S_{\min})}}
+]</p>
+<h3 id="分配関数の対数">分配関数の対数</h3>
+<p>[
+\log\left(\sum_i e^{-S_i}\right)=
+-S_{\min}
++
+\log\left(\sum_i e^{-(S_i-S_{\min})}\right)
+]</p>
+<p>これは ( x_i=-S_i ) とおいた log-sum-exp trick そのものである。</p>
+<hr>
+<h2 id="9-差だけ必要なら差で計算する">9. 差だけ必要なら差で計算する</h2>
+<p>比</p>
+<p>[
+\frac{e^a}{e^b}
+]</p>
+<p>は、それぞれを別に指数化するより</p>
+<p>[
+e^{a-b}
+]</p>
+<p>と書く方が安全である。</p>
+<p>同様に</p>
+<p>[
+\frac{e^{-S(\phi)}}{e^{-S(\chi)}} = e^{-(S(\phi)-S(\chi))}
+]</p>
+<p>である。<br>
+絶対値ではなく差が本質なら、最初から差で計算する。</p>
+<hr>
+<h2 id="10-metropolis-型の受理率">10. Metropolis 型の受理率</h2>
+<p>たとえば</p>
+<p>[
+A=\min{1,e^{-\Delta S}}
+]</p>
+<p>を計算する場合、素朴に常に指数を計算する必要はない。<br>
+次のように分岐すればよい。</p>
+<p>[
+\Delta S \le 0 \Rightarrow A=1
+]</p>
+<p>[
+\Delta S &gt; 0 \Rightarrow A=e^{-\Delta S}
+]</p>
+<p>これなら、実際に計算する指数の中身は常に非正である。</p>
+<hr>
+<h2 id="11-深層学習でも同じことをしている">11. 深層学習でも同じことをしている</h2>
+<p>深層学習ライブラリでも、この種の数値安定化は標準である。</p>
+<h3 id="softmax--log-softmax">softmax / log-softmax</h3>
+<p>[
+\log(\mathrm{softmax}(x))
+]</p>
+<p>を素朴に</p>
+<p>[
+\log\left(\frac{e^{x_i}}{\sum_j e^{x_j}}\right)
+]</p>
+<p>と計算すると不安定なので、内部では最大値を引いた形や log-sum-exp が使われる。</p>
+<h3 id="cross-entropy">cross entropy</h3>
+<p>softmax を明示的に計算してから log を取るのでなく、logits から直接、安定な形で loss を計算する。</p>
+<h3 id="sigmoid-cross-entropy">sigmoid cross entropy</h3>
+<p>2値分類の損失では</p>
+<p>[
+x-xz+\log(1+\exp(-x))
+]</p>
+<p>のような式が現れるが、( x&lt;0 ) で (\exp(-x)) が危険になる。<br>
+そこで</p>
+<p>[
+\max(x,0)-xz+\log(1+\exp(-|x|))
+]</p>
+<p>のように、指数の中身が非正になる等価変形を用いる。</p>
+<hr>
+<h2 id="12-tensorflow-の-sigmoid_cross_entropy_with_logits-の意味">12. TensorFlow の <code>sigmoid_cross_entropy_with_logits</code> の意味</h2>
+<p><code>sigmoid_cross_entropy_with_logits</code> では、損失が最終的に</p>
+<p>[
+x-xz+\log(1+\exp(-x))
+]</p>
+<p>と書ける。<br>
+しかし ( x&lt;0 ) だと (-x&gt;0) なので、(\exp(-x)) が大きくなり危険である。</p>
+<p>そこで実装では</p>
+<p>[
+\max(x,0)-xz+\log(1+\exp(-|x|))
+]</p>
+<p>を使う。</p>
+<p>ここで</p>
+<p>[
+-|x|\le 0
+]</p>
+<p>なので、指数関数は安全である。</p>
+<hr>
+<h2 id="13-pytorch-でも同様">13. PyTorch でも同様</h2>
+<p>PyTorch でも</p>
+<ul>
+<li><code>log_softmax</code></li>
+<li><code>cross_entropy</code></li>
+<li><code>BCEWithLogitsLoss</code></li>
+</ul>
+<p>などが、内部で安定化された形を用いる。</p>
+<p>つまり、</p>
+<p>[
+\exp
+]</p>
+<p>をむき出しで計算するより、</p>
+<ul>
+<li><code>log_softmax</code></li>
+<li><code>logsumexp</code></li>
+<li><code>cross_entropy</code></li>
+<li><code>binary_cross_entropy_with_logits</code></li>
+</ul>
+<p>のような関数を使うのが基本である。</p>
+<hr>
+<h2 id="14-直感的な理解">14. 直感的な理解</h2>
+<p>本質は、数式の上では有限でも、計算機では途中計算が壊れるという点にある。</p>
+<p>たとえば</p>
+<p>[
+\frac{\exp(1000)}{\exp(1000)+\exp(999)}
+]</p>
+<p>は数学的には有限だが、計算機はまず ( \exp(1000) ) を表現できない。<br>
+そこで</p>
+<p>[
+\frac{\exp(0)}{\exp(0)+\exp(-1)}
+]</p>
+<p>のように同値変形してから計算する必要がある。</p>
+<hr>
+<h2 id="15-実務的な指針">15. 実務的な指針</h2>
+<p>指数関数が現れたら、次を確認するとよい。</p>
+<h3 id="和の中に--exp--がある">和の中に ( \exp ) がある</h3>
+<p>[
+\sum_i \exp(a_i)
+]
+なら log-sum-exp を使う。</p>
+<h3 id="正規化重み-1">正規化重み</h3>
+<p>[
+\frac{\exp(a_i)}{\sum_j \exp(a_j)}
+]
+なら最大値を引く。</p>
+<h3 id="-e-s--型">( e^{-S} ) 型</h3>
+<p>[
+e^{-S_i}
+]
+なら ( S_{\min} ) を引いて
+[
+e^{-(S_i-S_{\min})}
+]
+にする。</p>
+<h3 id="比">比</h3>
+<p>[
+\frac{e^a}{e^b}
+]
+なら
+[
+e^{a-b}
+]
+にする。</p>
+<h3 id="受理率">受理率</h3>
+<p>[
+\min{1,e^{-\Delta S}}
+]
+なら符号で分岐する。</p>
+<h3 id="できれば-log-のまま保持">できれば log のまま保持</h3>
+<p>確率や重みは、可能なら
+[
+p
+]
+ではなく
+[
+\log p
+]
+を保持する。</p>
+<hr>
+<h2 id="16-結論">16. 結論</h2>
+<p>指数関数が入る数値計算では、次が中心原理である。</p>
+<p>[
+\text{大きい指数を直接作らない}
+]</p>
+<p>そのための代表的手法は</p>
+<ol>
+<li>最大値・最小値を引く</li>
+<li>log-sum-exp を使う</li>
+<li>差で計算する</li>
+<li>log のまま持つ</li>
+<li>必要に応じて安定な等価変形を使う</li>
+</ol>
+<p>である。</p>
+<p>特に</p>
+<p>[
+e^{-S}
+]</p>
+<p>型の重みでは</p>
+<p>[
+e^{-S_i}
+\quad\longrightarrow\quad
+e^{-(S_i-S_{\min})}
+]</p>
+<p>という変形が基本であり、これは深層学習で使われる softmax や BCE の数値安定化と本質的に同じ発想である。</p>
+
+            
+            
+        </body>
+        </html>
