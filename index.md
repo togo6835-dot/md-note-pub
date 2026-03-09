@@ -7,7 +7,7 @@ title: Home
 理論物理・情報系・機械学習の公開ノート集です。
 
 ## 数値計算
-- [みぞ](notes/exp.md)
+- [みぞ](notes/exp.html)
 
 ## C言語
 - [Hello World](notes/c/hello-world.html)
