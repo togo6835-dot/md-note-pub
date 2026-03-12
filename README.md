@@ -9,6 +9,9 @@
 - [Hello World](notes/c/hello-world.md)
 - [ポインタ入門](notes/c/pointer.md)
 
+## マークダウン
+- [チートシート](notes/md-cheet.md)
+
 <!--
 ## コンピュータ基礎
 - [RAMとROM](notes/cs/ram-rom.md)
